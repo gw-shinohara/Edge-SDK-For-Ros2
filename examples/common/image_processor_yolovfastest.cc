@@ -33,6 +33,12 @@
 #include "logger.h"
 #include "util_misc.h"
 
+#include <dlfcn.h>
+#include <cstdint>
+#include <iostream>
+#include <chrono>
+#include <csignal>
+
 using namespace cv;
 using namespace dnn;
 using namespace std;
@@ -62,6 +68,11 @@ static const char* class_names[] = {
     "refrigerator",  "book",          "clock",         "vase",
     "scissors",      "teddy bear",    "hair drier",    "toothbrush",
 };
+volatile sig_atomic_t flag = 1;
+void handler(int signum)
+{
+    flag = 0;
+}
 
 int32_t ImageProcessorYolovFastest::Init() {
     if (GetCurrentFileDirPath(__FILE__, sizeof(cur_file_dir_path_),
@@ -79,6 +90,23 @@ int32_t ImageProcessorYolovFastest::Init() {
     DEBUG("%s, %s", prototxt_file_dir_path_, weights_file_dir_path_);
     net_ = readNetFromDarknet(prototxt_file_dir_path_, weights_file_dir_path_);
 
+    const string SO_FILE_PATH = "/home/ros_ws/src/ros2-detection-python/Edge-SDK-For-Ros2/build/ros_shared_object/libros_shared_object_library.so";
+    std::signal(SIGINT, handler); 
+    handle = dlopen(SO_FILE_PATH.c_str(), RTLD_NOW);
+    if (!handle) {
+        ERROR("Error loading shared object: %s", dlerror());
+        return 1;
+    }
+
+    intptr_t (*create)() = (intptr_t (*)())dlsym(handle, "create");
+    if (!create) {
+        ERROR("Error loading symbol create: %s", dlerror());
+        return 1;
+    }
+
+    // Create the instance of the ROS2 node
+    instance = (*create)();
+
     cv::namedWindow(show_name_.c_str(), cv::WINDOW_NORMAL);
     cv::resizeWindow(show_name_.c_str(), 960, 540);
     cv::moveWindow(show_name_.c_str(), rand()&0xFF, rand()&0xff);
@@ -86,6 +114,45 @@ int32_t ImageProcessorYolovFastest::Init() {
 }
 
 void ImageProcessorYolovFastest::Process(const std::shared_ptr<Image> image) {
+    
+    void (*spin_some)(intptr_t) = (void (*)(intptr_t))dlsym(handle, "spin_some");
+    if (!spin_some) {
+        ERROR("Error loading symbol spin_some: %s", dlerror());
+        return;
+    }
+
+    // Function to publish the sensor image (assuming it takes an image and an instance)
+    void (*talk)(intptr_t, const cv::Mat&) = (void (*)(intptr_t, const cv::Mat&))dlsym(handle, "talk");
+    if (!talk) {
+        ERROR("Error loading symbol talk: %s", dlerror());
+        return;
+    }
+
+    void (*destroy)(intptr_t) = (void (*)(intptr_t))dlsym(handle, "destroy");
+    if (!destroy) {
+        ERROR("Error loading symbol destroy: %s", dlerror());
+        return;
+    }
+
+    //   ///////////////////////////////////////////////////////
+    auto do_publish = [&] {
+        Mat& frame = *image;
+
+        ERROR("Let's publish!");
+        // Publish the frame
+        (*talk)(instance, frame);
+        (*spin_some)(instance);
+
+        if (flag == 0)
+        {
+            // Clean up
+            (*destroy)(instance);
+            dlclose(handle);
+            handle = nullptr;
+        }
+    };
+    do_publish();
+
     auto detect = [&](cv::Mat& frame, vector<Mat>& outs) {
         Mat blob;
         blobFromImage(frame, blob, 1 / 255.0, Size(320, 320), Scalar(0, 0, 0),
@@ -173,6 +240,8 @@ void ImageProcessorYolovFastest::Process(const std::shared_ptr<Image> image) {
     };
 
     do_process();
+
+    ///////////////////////////////////////////////////////   //
 }
 
 }  // namespace edge_app

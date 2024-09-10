@@ -6,7 +6,7 @@ set(SAMPLE_LIB edge_sample)
 set(CMAKE_C_FLAGS "-pthread -std=gnu99")
 set(CMAKE_EXE_LINKER_FLAGS "-pthread")
 set(CMAKE_C_COMPILER "gcc")
-set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_CXX_COMPILER /usr/bin/c++)
 
 set(COMMON_CXX_FLAGS "-std=c++14 -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_CXX_FLAGS} -fprofile-arcs -ftest-coverage -Wno-deprecated-declarations")
@@ -73,6 +73,8 @@ else ()
     message(STATUS "\nDID NOT FIND FFMPEG IN THE SYSTEM, SOME EXECUTABLE FILES WILL NOT BE BUILT!!\n")
 endif (FFMPEG_FOUND)
 
+add_subdirectory(ros_shared_object)
+
 if (OpenCV_FOUND AND FFMPEG_FOUND)
     file(GLOB_RECURSE MODULE_SAMPLE_SRC
             ${MODULE_SAMPLE_SRC}
@@ -87,16 +89,19 @@ if (OpenCV_FOUND AND FFMPEG_FOUND)
 
     link_libraries(${OpenCV_LIBS})
     link_libraries(${FFMPEG_LIBRARIES})
+    link_libraries(ros_shared_object_library)
     add_executable(sample_liveview  examples/liveview/sample_liveview_main.cc)
-    target_link_libraries(sample_liveview ${SAMPLE_LIB})
+    target_link_libraries(sample_liveview ${SAMPLE_LIB} ros_shared_object_library)
 
     add_executable(test_liveview examples/liveview/test_liveview_main.cc)
     add_executable(test_liveview_dual examples/liveview/test_liveview_dual_main.cc)
-    target_link_libraries(test_liveview ${SAMPLE_LIB})
-    target_link_libraries(test_liveview_dual ${SAMPLE_LIB})
+    target_link_libraries(test_liveview ${SAMPLE_LIB} ros_shared_object_library)
+    target_link_libraries(test_liveview_dual ${SAMPLE_LIB} ros_shared_object_library)
 
     add_executable(pressure_test examples/test/pressure_test.cc)
     target_link_libraries(pressure_test ${SAMPLE_LIB})
+
+    link_directories(ros_shared_object)
 endif ()
 
 add_library(${SAMPLE_LIB} STATIC ${MODULE_SAMPLE_SRC})

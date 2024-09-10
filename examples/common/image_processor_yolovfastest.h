@@ -46,6 +46,8 @@ class ImageProcessorYolovFastest : public ImageProcessor {
         kCurrentFilePathSizeMax = 128,
     };
     cv::dnn::Net net_;
+    void* handle = nullptr;
+    intptr_t instance = 0;
     char cur_file_dir_path_[kCurrentFilePathSizeMax];
     char prototxt_file_dir_path_[kFilePathSizeMax];
     char weights_file_dir_path_[kFilePathSizeMax];
