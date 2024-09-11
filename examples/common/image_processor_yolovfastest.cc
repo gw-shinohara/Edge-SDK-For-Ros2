@@ -90,7 +90,7 @@ int32_t ImageProcessorYolovFastest::Init() {
     DEBUG("%s, %s", prototxt_file_dir_path_, weights_file_dir_path_);
     net_ = readNetFromDarknet(prototxt_file_dir_path_, weights_file_dir_path_);
 
-    const string SO_FILE_PATH = "/home/ros_ws/src/ros2-detection-python/Edge-SDK-For-Ros2/build/ros_shared_object/libros_shared_object_library.so";
+    const string SO_FILE_PATH = "/usr/local/lib/libros_shared_object_library.so";
     std::signal(SIGINT, handler); 
     handle = dlopen(SO_FILE_PATH.c_str(), RTLD_NOW);
     if (!handle) {
