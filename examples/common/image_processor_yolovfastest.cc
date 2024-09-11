@@ -68,12 +68,12 @@ static const char* class_names[] = {
     "refrigerator",  "book",          "clock",         "vase",
     "scissors",      "teddy bear",    "hair drier",    "toothbrush",
 };
-volatile sig_atomic_t flag = 1;
-void handler(int signum)
-{
-    flag = 0;
-}
 
+volatile sig_atomic_t yolovfastest_flag = 1;
+void yolovfastest_handler(int signum)
+{
+    yolovfastest_flag = 0;
+}
 int32_t ImageProcessorYolovFastest::Init() {
     if (GetCurrentFileDirPath(__FILE__, sizeof(cur_file_dir_path_),
                               cur_file_dir_path_) != 0) {
@@ -91,7 +91,7 @@ int32_t ImageProcessorYolovFastest::Init() {
     net_ = readNetFromDarknet(prototxt_file_dir_path_, weights_file_dir_path_);
 
     const string SO_FILE_PATH = "/usr/local/lib/libros_shared_object_library.so";
-    std::signal(SIGINT, handler); 
+    std::signal(SIGINT, yolovfastest_handler); 
     handle = dlopen(SO_FILE_PATH.c_str(), RTLD_NOW);
     if (!handle) {
         ERROR("Error loading shared object: %s", dlerror());
@@ -143,7 +143,7 @@ void ImageProcessorYolovFastest::Process(const std::shared_ptr<Image> image) {
         (*talk)(instance, frame);
         (*spin_some)(instance);
 
-        if (flag == 0)
+        if (yolovfastest_flag == 0)
         {
             // Clean up
             (*destroy)(instance);

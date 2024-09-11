@@ -35,21 +35,21 @@
 #include <chrono>
 #include <csignal>
 
+using namespace cv;
 using namespace std;
 using namespace edge_sdk;
 
 namespace edge_app {
 
-volatile sig_atomic_t flag = 1;
-void handler(int signum)
+volatile sig_atomic_t publisher_flag = 1;
+void publisher_handler(int signum)
 {
-    flag = 0;
+    publisher_flag = 0;
 }
 
 int32_t ImageProcessorPublisher::Init() {
-
     const string SO_FILE_PATH = "/usr/local/lib/libros_shared_object_library.so";
-    std::signal(SIGINT, handler); 
+    std::signal(SIGINT, publisher_handler); 
     handle = dlopen(SO_FILE_PATH.c_str(), RTLD_NOW);
     if (!handle) {
         ERROR("Error loading shared object: %s", dlerror());
@@ -96,7 +96,7 @@ void ImageProcessorPublisher::Process(const std::shared_ptr<Image> image) {
         (*talk)(instance, frame);
         (*spin_some)(instance);
 
-        if (flag == 0)
+        if (publisher_flag == 0)
         {
             // Clean up
             (*destroy)(instance);
