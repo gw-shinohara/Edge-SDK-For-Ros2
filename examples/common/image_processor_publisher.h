@@ -19,43 +19,34 @@
  *
  *********************************************************************
  */
-#include "image_processor.h"
+#ifndef __IMAGE_PROCESSOR_PUBLISHER_H__
+#define __IMAGE_PROCESSOR_PUBLISHER_H__
 
-#include "image_processor_display.h"
-#include "image_processor_yolovfastest.h"
-#include "image_processor_publisher.h"
-#include "logger.h"
+#include <memory>
+
+#include "image_processor.h"
 
 namespace edge_app {
 
-class UndefinedImageProcessor : public ImageProcessor {
+class ImageProcessorPublisher : public ImageProcessor {
    public:
-    UndefinedImageProcessor(const std::string& name) : name_(name) {}
+    ImageProcessorPublisher(const std::string& name) : show_name_(name) {}
 
-    void Process(const std::shared_ptr<Image> image) override {
-        ERROR("undefine image processor: %s", name_.c_str());
-    }
+    ~ImageProcessorPublisher() override {}
+
+    int32_t Init() override;
+
+    void Process(const std::shared_ptr<Image> image) override;
 
    private:
-    std::string name_;
+    std::string show_name_;
+
+    void* handle = nullptr;
+    intptr_t instance = 0;
+
 };
 
-ImageProcessor::ImageProcessor() {}
-
-ImageProcessor::~ImageProcessor() {}
-
-std::shared_ptr<ImageProcessor> CreateImageProcessor(
-    const ImageProcessor::Options& option) {
-    if (option.name == std::string("display")) {
-        return std::make_shared<ImageDisplayProcessor>(option.alias, option.userdata);
-    }
-    if (option.name == std::string("yolovfastest")) {
-        return std::make_shared<ImageProcessorYolovFastest>(option.alias);
-    }
-    if (option.name == std::string("publisher")) {
-        return std::make_shared<ImageProcessorPublisher>(option.alias);
-    }
-    return std::make_shared<UndefinedImageProcessor>(option.alias);
-}
-
 }  // namespace edge_app
+
+#endif
+

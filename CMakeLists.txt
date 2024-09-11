@@ -85,7 +85,9 @@ if (OpenCV_FOUND AND FFMPEG_FOUND)
             examples/liveview/stream_processor_thread.cc
             examples/common/util_misc.cc
             examples/common/image_processor.cc
-            examples/common/image_processor_yolovfastest.cc)
+            examples/common/image_processor_yolovfastest.cc
+            examples/common/image_processor_publisher.cc
+        )
 
     link_libraries(${OpenCV_LIBS})
     link_libraries(${FFMPEG_LIBRARIES})
@@ -95,8 +97,10 @@ if (OpenCV_FOUND AND FFMPEG_FOUND)
 
     add_executable(test_liveview examples/liveview/test_liveview_main.cc)
     add_executable(test_liveview_dual examples/liveview/test_liveview_dual_main.cc)
+    add_executable(publish_liveview examples/liveview/publish_liveview_main.cc)
     target_link_libraries(test_liveview ${SAMPLE_LIB} ros_shared_object_library)
     target_link_libraries(test_liveview_dual ${SAMPLE_LIB} ros_shared_object_library)
+    target_link_libraries(publish_liveview ${SAMPLE_LIB} ros_shared_object_library)
 
     add_executable(pressure_test examples/test/pressure_test.cc)
     target_link_libraries(pressure_test ${SAMPLE_LIB})
