@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     StreamDecoder::Options decoder_option = {.name = std::string("ffmpeg")};
     auto stream_decoder = CreateStreamDecoder(decoder_option);
 
-    ImageProcessor::Options image_processor_option = {.name = std::string("display"),
+    ImageProcessor::Options image_processor_option = {.name = std::string("yolovfastest"),
                                        .alias = camera, .userdata = liveview_sample};
     auto image_processor = CreateImageProcessor(image_processor_option);
 
