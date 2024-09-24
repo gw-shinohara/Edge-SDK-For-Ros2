@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         if (argc == 4) {
             auto src = atoi(argv[3]);
             INFO("set camera soure: %d", src);
-            liveview_sample->SetCameraSource((edge_sdk::Liveview::CameraSource)src);
+            liveview_publisher->SetCameraSource((edge_sdk::Liveview::CameraSource)src);
         }
         sleep(3);
     }
