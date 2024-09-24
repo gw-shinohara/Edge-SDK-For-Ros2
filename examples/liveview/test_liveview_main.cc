@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
             INFO("set camera soure: %d", src);
             liveview_sample->SetCameraSource((edge_sdk::Liveview::CameraSource)src);
         }
-        sleep(3)
-    };
+        sleep(3);
+    }
 
     return 0;
 }
